@@ -1,0 +1,85 @@
+[package]
+name = "ghostlink"
+version = "0.2.0"
+edition = "2024"
+description = "Rust client for GhostChain ecosystem - bridge to GhostBridge Zig server"
+license = "MIT"
+repository = "https://github.com/ghost-chain/ghostlink"
+authors = ["GhostChain Team"]
+
+[features]
+default = ["zvm", "quic"]
+zvm = []
+zvm-integration = []
+quic = ["dep:quinn"]
+http3 = ["quic", "dep:h3", "dep:h3-quinn"]
+
+[dependencies]
+# Cryptography
+x25519-dalek = "1.1"
+ed25519-dalek = "2.0"
+chacha20poly1305 = "0.10"
+blake3 = "1.5"
+hkdf = "0.12"
+sha2 = "0.10"
+subtle = "2.5"
+zeroize = "1.7"
+rand = "0.8"
+
+# Networking & gRPC
+tonic = { version = "0.11", features = ["tls"] }
+prost = "0.12"
+tokio = { version = "1.0", features = ["full"] }
+tower = "0.4"
+hyper = "1.0"
+url = { version = "2.4", features = ["serde"] }
+
+# QUIC & HTTP/3 (optional)
+quinn = { version = "0.10", optional = true, features = ["rustls"] }
+h3 = { version = "0.0.4", optional = true }
+h3-quinn = { version = "0.0.4", optional = true }
+rustls = "0.21"
+ring = "0.16"
+rcgen = "0.11"
+webpki-roots = "0.25"
+
+# Async & concurrency
+futures = "0.3"
+async-trait = "0.1"
+
+# Caching
+dashmap = "5.5"
+lru = "0.12"
+
+# CLI
+clap = { version = "4.4", features = ["derive"] }
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+hex = "0.4"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+[build-dependencies]
+tonic-build = "0.11"
+
+[[bin]]
+name = "ghostlink"
+path = "src/main.rs"
+
+[lib]
+name = "ghostlink"
+path = "src/lib.rs"
+
+[[example]]
+name = "demo"
+path = "examples/demo.rs"
+
+[[example]]
+name = "transport_demo"
+path = "examples/transport_demo.rs"

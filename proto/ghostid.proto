@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package ghostid.v1;
+
+// GhostID identity service
+service GhostID {
+    rpc CreateIdentity(CreateIdentityRequest) returns (CreateIdentityResponse);
+    rpc GetIdentity(GetIdentityRequest) returns (GetIdentityResponse);
+    rpc UpdateIdentity(UpdateIdentityRequest) returns (UpdateIdentityResponse);
+    rpc VerifyIdentity(VerifyIdentityRequest) returns (VerifyIdentityResponse);
+}
+
+message CreateIdentityRequest {
+    string username = 1;
+    string public_key = 2;
+    map<string, string> metadata = 3;
+    bytes signature = 4;
+}
+
+message CreateIdentityResponse {
+    string identity_id = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message GetIdentityRequest {
+    string identity_id = 1;
+}
+
+message GetIdentityResponse {
+    GhostIdentity identity = 1;
+}
+
+message UpdateIdentityRequest {
+    string identity_id = 1;
+    map<string, string> metadata = 2;
+    bytes signature = 3;
+}
+
+message UpdateIdentityResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+message VerifyIdentityRequest {
+    string identity_id = 1;
+    bytes challenge = 2;
+    bytes signature = 3;
+}
+
+message VerifyIdentityResponse {
+    bool valid = 1;
+}
+
+message GhostIdentity {
+    string identity_id = 1;
+    string username = 2;
+    string public_key = 3;
+    map<string, string> metadata = 4;
+    int64 created_at = 5;
+    int64 updated_at = 6;
+}
