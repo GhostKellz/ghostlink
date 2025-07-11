@@ -14,7 +14,7 @@ async fn main() -> Result<()> {
         .with_tls()
         .build();
     
-    let client = GhostClient::connect(config).await?;
+    let mut client = GhostClient::connect(config).await?;
     println!("✅ Connected to GhostBridge");
 
     // Example 1: Resolve a .ghost domain via ZNS

@@ -12,10 +12,45 @@ This document provides integration instructions for GhostChain ecosystem project
 - **Clean API**: Trait-based crypto interfaces and transport abstraction
 - **Rust 2024 Edition**: Modern Rust features and best practices
 
-## Integration for GhostChain Projects
+## Who Should Use This Guide?
 
-### 1. **GhostChain Core (Rust)**
-The main blockchain implementation should integrate GhostLink for client operations.
+**Direct Integration (use this guide):**
+- ✅ **GhostChain Core + ghostd + walletd** developers (Rust projects)
+- ✅ **GhostBridge Rust Client** developers (Rust client libraries within the hybrid bridge)
+
+**Indirect Access (don't use this guide):**
+- ❌ **ZVM & ZNS** developers - Use GhostBridge's gRPC API instead
+- ❌ **Other external projects** - Use GhostBridge's gRPC API instead
+
+## Direct Integration Projects
+
+**Only the following projects need to directly integrate GhostLink:**
+
+1. **GhostChain Core + ghostd + walletd** (Rust) - Main blockchain implementation
+2. **GhostBridge Rust Client** (Rust) - Client libraries within the hybrid Zig/Rust bridge
+
+**Zig projects (ZVM, ZNS) do NOT directly integrate GhostLink** - they communicate through GhostBridge's gRPC interface as an intermediary.
+
+## Architecture Overview
+
+```
+┌─────────────┐    gRPC     ┌──────────────┐    GhostLink    ┌─────────────┐
+│ ZVM (Zig)   │ ────────────▶ GhostBridge   │ ──────────────▶ │ GhostChain  │
+│ ZNS (Zig)   │              │ (Zig + Rust) │                 │ (Rust)      │
+└─────────────┘              └──────────────┘                 └─────────────┘
+```
+
+**Direct Integration:**
+- **GhostChain** (core, ghostd, walletd) - Uses GhostLink internally for client operations
+- **GhostBridge Rust Client** - Uses GhostLink to communicate with GhostChain nodes
+
+**Indirect Access:**
+- **ZVM & ZNS** - Access GhostChain via GhostBridge's gRPC API (no direct GhostLink integration)
+
+## Integration for Direct Integration Projects
+
+### 1. **GhostChain Core + ghostd + walletd (Rust)**
+The main blockchain implementation with daemon and wallet services should integrate GhostLink for client operations.
 
 **Repository**: `github.com/ghostkellz/ghostchain`
 
@@ -24,8 +59,8 @@ The main blockchain implementation should integrate GhostLink for client operati
 [dependencies]
 ghostlink = { git = "https://github.com/ghostkellz/ghostlink", version = "0.3.0" }
 
-# Optional features
-ghostlink = { git = "https://github.com/ghostkellz/ghostlink", version = "0.3.0", features = ["zvm"] }
+# Optional features for specific components
+ghostlink = { git = "https://github.com/ghostkellz/ghostlink", version = "0.3.0", features = ["quic"] }
 ```
 
 #### Example Usage
@@ -52,87 +87,89 @@ async fn main() -> Result<()> {
 }
 ```
 
-### 2. **ZVM (Zero Virtual Machine)**
-ZVM should use GhostLink for blockchain interactions and smart contract deployment.
+#### Integration Points for ghostd (daemon)
+- Node-to-node communication via gRPC
+- Client API endpoints for external services
+- Blockchain synchronization and consensus
+- Transaction pool management
 
-**Repository**: `github.com/ghostkellz/zvm`
+#### Integration Points for walletd (wallet daemon)
+- Account management and key derivation
+- Transaction creation and broadcasting
+- Balance queries and transaction history
+- Multi-signature operations
 
-#### Integration Points
-- Smart contract deployment via GhostChain gRPC
-- State queries and transaction submission
-- Event listening and block monitoring
+### 2. **GhostBridge Rust Client** (within hybrid Zig/Rust project)
+The **Rust client libraries** within GhostBridge use GhostLink to communicate with GhostChain nodes.
+
+**Repository**: `github.com/ghostkellz/ghostbridge`  
+**Languages**: Zig (server) + Rust (client libraries)
 
 #### Cargo.toml
 ```toml
+# ghostbridge/rust-client/Cargo.toml
 [dependencies]
-ghostlink = { git = "https://github.com/ghostkellz/ghostlink", version = "0.3.0", features = ["zvm", "quic"] }
+ghostlink = { git = "https://github.com/ghostkellz/ghostlink", version = "0.3.0", features = ["quic"] }
+tonic = "0.12"
+prost = "0.13"
 ```
 
 #### Example Usage
 ```rust
-use ghostlink::{GhostClient, TransportProtocol};
-use ghostlink::zvm::{ZVMExecutor, ContractUtils};
+// ghostbridge/rust-client/src/ghostchain_client.rs
+use ghostlink::{GhostClient, GhostClientConfig, TransportProtocol};
 
-// Deploy smart contract
-let client = GhostClient::new(config).await?;
-let zvm = ZVMExecutor::new(client);
+pub struct GhostBridgeClient {
+    ghostlink_client: GhostClient,
+}
 
-let contract_bytecode = include_bytes!("contract.wasm");
-let contract_address = zvm.deploy_contract(contract_bytecode).await?;
+impl GhostBridgeClient {
+    pub async fn new(endpoint: String) -> Result<Self> {
+        let config = GhostClientConfig::builder()
+            .endpoint(endpoint)
+            .transport(TransportProtocol::Quic)
+            .with_tls()
+            .build();
+            
+        let ghostlink_client = GhostClient::new(config).await?;
+        
+        Ok(Self { ghostlink_client })
+    }
+    
+    pub async fn resolve_domain(&self, domain: String) -> Result<DomainResponse> {
+        // Use GhostLink to query GhostChain for domain resolution
+        self.ghostlink_client
+            .ghostchain()
+            .resolve_domain(domain)
+            .await
+    }
+}
 ```
 
-### 3. **GhostBridge (Cross-Chain Bridge)**
-Bridge infrastructure for connecting GhostChain to other blockchains.
+## Indirect Access via GhostBridge
 
-**Repository**: `github.com/ghostkellz/ghostbridge`
+The following projects do **NOT** directly integrate GhostLink. They access GhostChain functionality through GhostBridge's gRPC API:
 
-#### Integration Points
-- Cross-chain transaction verification
-- Multi-signature operations
-- Bridge state management
+### **ZVM (Zero Virtual Machine) - Zig Project**
+**Repository**: `github.com/ghostkellz/zvm`  
+**Language**: Zig  
+**Integration**: Via GhostBridge gRPC (no direct GhostLink usage)
 
-#### Cargo.toml
-```toml
-[dependencies]
-ghostlink = { git = "https://github.com/ghostkellz/ghostlink", version = "0.3.0", features = ["quic"] }
+```zig
+// ZVM communicates through GhostBridge's gRPC interface
+// ZVM (Zig) → GhostBridge gRPC API → GhostBridge Rust Client → GhostLink → GhostChain
 ```
 
-### 4. **GhostWallet (Rust CLI/Desktop)**
-Native Rust wallet implementation for GhostChain.
+### **ZNS (Zero Name Service) - Zig Project** 
+**Repository**: `github.com/ghostkellz/zns`  
+**Language**: Zig  
+**Integration**: Via GhostBridge gRPC (no direct GhostLink usage)
 
-**Repository**: `github.com/ghostkellz/ghostwallet`
-
-#### Integration Points
-- Account management and key derivation
-- Transaction creation and broadcasting
-- Balance queries and transaction history
-
-#### Cargo.toml
-```toml
-[dependencies]
-ghostlink = { git = "https://github.com/ghostkellz/ghostlink", version = "0.3.0" }
-gcrypt = { git = "https://github.com/ghostkellz/gcrypt", version = "0.3.0" }
+```zig
+// ZNS communicates through GhostBridge's gRPC interface  
+// ZNS (Zig) → GhostBridge gRPC API → GhostBridge Rust Client → GhostLink → GhostChain
 ```
-
-### 5. **GhostID (Identity Management)**
-Decentralized identity system built on GhostChain.
-
-**Repository**: `github.com/ghostkellz/ghostid`
-
-#### Integration Points
-- Identity verification and attestation
-- DID document management
-- Credential issuance and verification
-
-### 6. **ZNS (Zero Name Service)**
-Decentralized naming system for the GhostChain ecosystem.
-
-**Repository**: `github.com/ghostkellz/zns`
-
-#### Integration Points
-- Domain registration and resolution
-- DNS-over-QUIC support
-- Decentralized web gateway
+```
 
 ## Available Features
 

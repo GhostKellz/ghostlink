@@ -18,7 +18,7 @@
 //! 
 //! ## Quick Start
 //! 
-//! ```rust
+//! ```no_run
 //! use ghostlink::{GhostClient, GhostClientConfig};
 //! 
 //! #[tokio::main]
@@ -28,7 +28,7 @@
 //!         .with_tls()
 //!         .build();
 //!     
-//!     let client = GhostClient::connect(config).await?;
+//!     let mut client = GhostClient::connect(config).await?;
 //!     
 //!     // Resolve a .ghost domain
 //!     let domain = client.zns().resolve_domain("ghostkellz.ghost").await?;
