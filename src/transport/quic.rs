@@ -26,7 +26,6 @@ use tracing::{debug, info, warn};
 /// QUIC transport with multiplexed service channels
 #[derive(Debug)]
 pub struct QuicTransport {
-    config: TransportConfig,
     channel_registry: ChannelRegistry,
     endpoint: Option<Endpoint>,
 }
@@ -50,7 +49,6 @@ impl QuicTransport {
         endpoint.set_default_client_config(client_config);
 
         Ok(Self {
-            config,
             channel_registry: ChannelRegistry::new(),
             endpoint: Some(endpoint),
         })
