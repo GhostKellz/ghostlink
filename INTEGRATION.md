@@ -160,7 +160,7 @@ The following projects do **NOT** directly integrate GhostLink. They access Ghos
 // ZVM (Zig) → GhostBridge gRPC API → GhostBridge Rust Client → GhostLink → GhostChain
 ```
 
-### **ZNS (Zero Name Service) - Zig Project** 
+### **ZNS (Zig Name Service) - Zig Project** 
 **Repository**: `github.com/ghostkellz/zns`  
 **Language**: Zig  
 **Integration**: Via GhostBridge gRPC (no direct GhostLink usage)

@@ -5,7 +5,7 @@
 //! - QUIC with multiplexing
 //! - HTTP/3 gRPC-Web
 
-use ghostlink::{GhostClientConfig, TransportProtocol};
+use ghostlink::{GhostClient, GhostClientConfig, TransportProtocol};
 use anyhow::Result;
 use tracing::{info, Level};
 use tracing_subscriber;

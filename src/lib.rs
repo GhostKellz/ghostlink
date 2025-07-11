@@ -18,7 +18,7 @@
 //! 
 //! ## Quick Start
 //! 
-//! ```no_run
+//! ```rust
 //! use ghostlink::{GhostClient, GhostClientConfig};
 //! 
 //! #[tokio::main]
@@ -28,7 +28,7 @@
 //!         .with_tls()
 //!         .build();
 //!     
-//!     let mut client = GhostClient::connect(config).await?;
+//!     let client = GhostClient::connect(config).await?;
 //!     
 //!     // Resolve a .ghost domain
 //!     let domain = client.zns().resolve_domain("ghostkellz.ghost").await?;
@@ -51,6 +51,7 @@ pub mod error;
 pub mod proto;
 pub mod cache;
 pub mod transport;
+pub mod zns_integration;
 
 #[cfg(feature = "zvm")]
 pub mod zvm;
@@ -60,6 +61,7 @@ pub use client::*;
 pub use config::*;
 pub use error::*;
 pub use transport::{TransportManager, TransportConfig, TransportProtocol};
+pub use zns_integration::{ZnsIntegration, ZnsConfig, DomainStorage, DomainRecord, DomainOwnership};
 
 /// Current version of GhostLink
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
