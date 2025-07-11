@@ -33,7 +33,7 @@ impl Transport for GrpcTransport {
         Ok(endpoint.connect().await?)
     }
 
-    async fn request(&self, conn: &mut Self::Connection, service: &str, method: &str, data: Vec<u8>) -> Result<Vec<u8>> {
+    async fn request(&self, _conn: &mut Self::Connection, _service: &str, _method: &str, _data: Vec<u8>) -> Result<Vec<u8>> {
         // This is a simplified interface - in practice, you'd use the specific gRPC clients
         // This is just for interface compatibility
         todo!("Use specific gRPC clients (GhostChainClient, ZnsClient, etc.)")

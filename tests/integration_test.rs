@@ -1,14 +1,12 @@
-//! Integration tests for GhostLink v0.1.0
-
-use anyhow::Result;
+//! Integration tests for GhostLink v0.3.0
 
 #[tokio::test]
 async fn test_ghostlink_basic_types() {
     // Test basic type compilation
     use ghostlink::error::GhostLinkError;
     
-    let error = GhostLinkError::ConnectionError("test".to_string());
-    assert!(format!("{:?}", error).contains("ConnectionError"));
+    let error = GhostLinkError::Connection("test".to_string());
+    assert!(format!("{:?}", error).contains("Connection"));
 }
 
 #[cfg(feature = "zvm-integration")]

@@ -208,7 +208,7 @@ mod tests {
     #[test]
     fn test_default_config() {
         let config = GhostClientConfig::default();
-        assert_eq!(config.endpoint.as_str(), crate::DEFAULT_ENDPOINT);
+        assert_eq!(config.endpoint.as_str(), "https://ghostbridge.local:9443/");
         assert!(config.tls_enabled);
         assert_eq!(config.timeout, Duration::from_secs(30));
     }
@@ -221,7 +221,7 @@ mod tests {
             .without_tls()
             .build();
 
-        assert_eq!(config.endpoint.as_str(), "https://custom.endpoint:9443");
+        assert_eq!(config.endpoint.as_str(), "https://custom.endpoint:9443/");
         assert!(!config.tls_enabled);
         assert_eq!(config.timeout, Duration::from_secs(60));
     }

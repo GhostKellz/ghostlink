@@ -51,12 +51,6 @@ pub enum GhostLinkError {
 /// Result type alias for GhostLink operations
 pub type Result<T> = std::result::Result<T, GhostLinkError>;
 
-impl From<ed25519_dalek::SignatureError> for GhostLinkError {
-    fn from(err: ed25519_dalek::SignatureError) -> Self {
-        GhostLinkError::Crypto(err.to_string())
-    }
-}
-
 impl From<url::ParseError> for GhostLinkError {
     fn from(err: url::ParseError) -> Self {
         GhostLinkError::Config(format!("Invalid URL: {}", err))

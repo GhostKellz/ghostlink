@@ -140,12 +140,24 @@ where
 
     /// Insert a value
     pub fn insert(&self, key: K, value: V) {
-        // Simple eviction: if we're at capacity, remove one random entry
-        if self.cache.len() >= self.max_size {
-            if let Some(entry) = self.cache.iter().next() {
-                let key_to_remove = entry.key().clone();
-                drop(entry); // Release the iterator
-                self.cache.remove(&key_to_remove);
+        // Simple eviction: if we're at capacity, remove entries to make space
+        while self.cache.len() >= self.max_size {
+            // Find any key to remove (simple FIFO-like eviction)
+            let key_to_remove = {
+                let mut iter = self.cache.iter();
+                if let Some(entry) = iter.next() {
+                    let key = entry.key().clone();
+                    drop(iter); // Release iterator before removal
+                    Some(key)
+                } else {
+                    break; // Cache is empty
+                }
+            };
+            
+            if let Some(k) = key_to_remove {
+                self.cache.remove(&k);
+            } else {
+                break;
             }
         }
         

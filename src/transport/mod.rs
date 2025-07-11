@@ -126,7 +126,7 @@ impl ChannelRegistry {
     
     pub fn service_by_id(&self, id: u64) -> Option<ServiceChannel> {
         self.channels.iter()
-            .find(|(_, &channel_id)| channel_id == id)
+            .find(|&(_, channel_id)| *channel_id == id)
             .map(|(service, _)| service.clone())
     }
 }

@@ -21,7 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_build::configure()
         .build_server(false) // GhostLink is client-only
         .build_client(true)
-        .compile(&proto_files, &["proto"])?;
+        .compile_protos(&proto_files, &["proto"])?;
         
     // Tell Cargo to recompile if proto files change
     for file in &proto_files {
